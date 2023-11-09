@@ -5,6 +5,17 @@ import { COLORS, WEIGHTS } from '../../constants';
 import { formatPrice, pluralize, isNewShoe } from '../../utils';
 import Spacer from '../Spacer';
 
+const FLAG_OPTIONS = {
+  'on-sale': {
+    label: 'Sale',
+    flagColor: COLORS.primary,
+  },
+  'new-release': {
+    label: 'Just Released!',
+    flagColor: COLORS.secondary,
+  },
+};
+
 const ShoeCard = ({
   slug,
   name,
@@ -31,24 +42,53 @@ const ShoeCard = ({
       ? 'new-release'
       : 'default'
 
+  let options;
+  if (variant !== 'default') {
+    options = FLAG_OPTIONS[variant];
+  }
+
   return (
     <Link href={`/shoe/${slug}`}>
       <Wrapper>
         <ImageWrapper>
-          <Image alt="" src={imageSrc} />
+          <Image alt='' src={imageSrc} />
+          {options && (
+            <Flag style={{ '--flag-color': options.flagColor }}>
+              {options.label}
+            </Flag>
+          )}
         </ImageWrapper>
         <Spacer size={12} />
         <Row>
           <Name>{name}</Name>
-          <Price>{formatPrice(price)}</Price>
+          <Price onSale={!!salePrice}>{formatPrice(price)}</Price>
         </Row>
         <Row>
           <ColorInfo>{pluralize('Color', numOfColors)}</ColorInfo>
+          {salePrice && (
+            <SalePrice>{formatPrice(salePrice)}</SalePrice>
+          )}
         </Row>
       </Wrapper>
     </Link>
   );
 };
+
+const Flag = styled.div`
+  position: absolute;
+  top: 12px;
+  right: -4px;
+  height: 32px;
+  border: none;
+  background-color: var(--flag-color);
+  border-radius: 2px;
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: ${14 / 16}rem;
+  font-weight: ${WEIGHTS.bold};
+  line-height: 32px;
+  color: white;
+`;
 
 const Link = styled.a`
   text-decoration: none;
@@ -61,10 +101,16 @@ const ImageWrapper = styled.div`
   position: relative;
 `;
 
-const Image = styled.img``;
+const Image = styled.img`
+  width: 100%;
+  border-radius: 16px 16px 4px 4px;
+`;
 
 const Row = styled.div`
   font-size: 1rem;
+
+  display: flex;
+  justify-content: space-between;
 `;
 
 const Name = styled.h3`
@@ -72,7 +118,10 @@ const Name = styled.h3`
   color: ${COLORS.gray[900]};
 `;
 
-const Price = styled.span``;
+const Price = styled.span`
+  text-decoration: ${(p) => p.onSale && 'line-through'};
+  color: ${(p) => (p.onSale ? COLORS.gray[700] : 'inherit')};
+`;
 
 const ColorInfo = styled.p`
   color: ${COLORS.gray[700]};
