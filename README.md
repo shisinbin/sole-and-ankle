@@ -101,3 +101,137 @@ _NOTE:_ This exercise has minimal flexbox implications, and is mainly about revi
 Our sneaker store can flex to support different screen sizes, but there isn't a proper mobile or tablet view. Don't fret — we will revisit this workshop in a future module!
 
 In the meantime, take a moment to congratulate yourself for making it through the Flexbox module!!
+
+## Note to self
+
+- `margin-right: auto` is a useful way of pushing content to the right of an element as far as possible.
+
+- With the second exercise, the temptation is to make the logo have absolute positioning and take it out of the flow of the page and then use `justify-content: center` on the header. But one issue here is that when the page is squeezed, there'll be this overlap.
+
+  So, the _Flexbox solution_ is to create a `<div>` component to live on the right of the header, and make both that and the logo have `flex: 1`, which sets `flex-grow: 1` but also `flex-basis: 0;`. This gives the logo no width, but it, along with the empty div, will both take up an equal amount of space on each side. This effectively squeezes the nav links into the centre.
+
+- `align-items: baseline` is kinda magical. For this third exercise, it was used across three flex containers and the overall effect is that there is this straight line running underneath all the text (of different sizes)!
+
+- Dynamically styling a component. There are two approaches.
+
+  1. Creating an object of 'options', e.g.
+
+     ```
+     const SIZES = {
+      small: {
+        radius: 4,
+        fontSize: 16,
+        ...
+      },
+      medium: {
+        ...
+      }
+     }
+     ```
+
+     Then in our functional component we can use whatever the variant is (in this case, the `size`) to pluck the options we want:
+
+     ```
+     const style = SIZES[size];
+     ```
+
+     These options can be used to create CSS variables and pass it to the component that consumes it:
+
+     ```
+     <SomeComponent style={{
+      '--border-radius': style.radius + 'px',
+      '--font-size': style.fontSize + 'px',
+      ...
+     }}>
+     ```
+
+     Finally, in our styled component, we use these CSS variables:
+
+     ```
+     const SomeComponent = styled.div`
+       ...
+       border-radius: var(--border-radius);
+       font-size: var(--font-size);
+     `;
+     ```
+
+  2. Using composition, e.g. in our JSX we might have this:
+
+     ```
+     {size === 'small' && <SmallComponent>}
+     {size === 'medium' && <MediumComponent>}
+     ```
+
+     then we'd have one styled component to serve as a sort of base:
+
+     ```
+     const BaseComponent = styled.div`
+       color: blue,
+       ...
+     `
+     ```
+
+     and we have the two components that use it as a base, inherit all its CSS:
+
+     ```
+     const SmallComponent = styled(BaseComponent)`
+       font-size: ${SIZES.small[fontSize] + 'px'}
+       border-radius: ${SIZES.small[radius] + 'px'}
+     `
+     ```
+
+     Alternatively, we could instead take a different approach with the logic and JSX:
+
+     ```
+     const style = SIZES[size];
+
+     let Component;
+     if (size === 'small') {
+      Component = SmallComponent;
+     } else if (size === 'medium') {
+      Component = MediumComponent;
+     }
+     ...
+     <Component style={{ styles }}>
+     ```
+
+     where `SIZES` would be changed to use CSS variables as keys. Then our CSS would look a bit better because it would use CSS variables rather than interpolation.
+
+- a brief mention of two different ways the styled component `Price` could be styled:
+
+  1. Approach 1 (Props and Logic in CSS):
+
+     ```
+     <Price onSale={variant === 'on-sale'}>
+       {formatPrice(price)}
+     </Price>
+     ...
+     const Price = styled.span`
+       text-decoration: ${(p) => p.onSale && 'line-through'};
+       color: ${(p) => p.onSale && COLORS.gray[700]};
+     `;
+     ```
+
+  2. Approach 2 (CSS Variables and Logic in JSX):
+
+     ```
+     <Price
+       style={{
+         '--color': variant === 'on-sale'
+           ? COLORS.gray[700]
+           : undefined,
+         '--text-decoration': variant === 'on-sale'
+           ? 'line-through'
+           : undefined,
+       }}
+     >
+       {formatPrice(price)}
+     </Price>
+     ...
+     const Price = styled.span`
+       color: var(--color);
+       text-decoration: var(--text-decoration);
+     `;
+     ```
+
+     The second approach is better, because the logic is separated from the CSS, making the CSS cleaner and more maintainable. Also, although we use the `style` prop, we are not doing any inline styles. By using CSS variables, we keep the styles in the CSS, which maintains the separation of concerns.

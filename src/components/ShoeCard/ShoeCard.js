@@ -119,7 +119,7 @@ const Flag = styled.div`
   font-size: ${14 / 16}rem;
   font-weight: ${WEIGHTS.bold};
   line-height: 32px;
-  color: white;
+  color: ${COLORS.white};
 `;
 
 const SaleFlag = styled(Flag)`
